@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plane 
+	id="5"
+	classname="Faith Enforcer"
+	hp="400"
+	minRange="4"
+	maxRange="20"
+	weapon="1"
+	armor="3"
+	speed="3"
+	maneuverability="3"
+	maxTurnAngle="47.5"
+	lowerSmooth='0.4'
+	upperSmooth='0.4'
+	description="Gas Hauler is capable of spawning clouds of high toxicity gas and has a rear turret.">
+	<gun id="2" pos="0,-1" turnAngle="180.0"/>
+	<ability id="3"/>
+	<ability id="5"/>
+	
+</plane>

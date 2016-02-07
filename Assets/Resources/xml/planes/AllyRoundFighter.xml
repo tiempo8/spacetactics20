@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plane 
+	id="21"
+	classname="S-A31"
+	hp="80"
+	minRange="13"
+	maxRange="25"
+	weapon="2"
+	armor="2"
+	speed="3"
+	maneuverability="3"
+	maxTurnAngle="45"
+	lowerSmooth='0.6'
+	upperSmooth='0.6'
+	description="">
+	<gun id="8" pos="0,1" turnAngle="0.0"/>
+	<ability id="1"/>
+	
+</plane>

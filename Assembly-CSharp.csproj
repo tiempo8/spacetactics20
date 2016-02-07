@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <RootNamespace></RootNamespace>
+    <ProjectGuid>{B2B58FB2-4462-6B0C-A872-40DD957E5FE0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseDirectory>Assets</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_2;UNITY_5_3;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_SPRITE_POLYGON;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;ENABLE_EDITOR_TESTS_RUNNER;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_LOG_MIXED_STACKTRACE;ENABLE_UNITYWEBREQUEST;PLATFORM_SUPPORTS_ADS_ID;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Temp\bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine">
+      <HintPath>D:/Unity532p1/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>D:/Unity532p1/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Resources\scripts\Abilities.cs" />
+     <Compile Include="Assets\Resources\scripts\BulletContainer.cs" />
+     <Compile Include="Assets\Resources\scripts\BulletPoolManager.cs" />
+     <Compile Include="Assets\Resources\scripts\BulletType.cs" />
+     <Compile Include="Assets\Resources\scripts\CameraBehaviour.cs" />
+     <Compile Include="Assets\Resources\scripts\EnemySpaceship.cs" />
+     <Compile Include="Assets\Resources\scripts\FPSCounter.cs" />
+     <Compile Include="Assets\Resources\scripts\FriendlySpaceship.cs" />
+     <Compile Include="Assets\Resources\scripts\GameGuiBehaviour.cs" />
+     <Compile Include="Assets\Resources\scripts\GameStorage.cs" />
+     <Compile Include="Assets\Resources\scripts\MissleBehaviour.cs" />
+     <Compile Include="Assets\Resources\scripts\MisslePoolManager.cs" />
+     <Compile Include="Assets\Resources\scripts\States.cs" />
+     <Compile Include="Assets\Resources\scripts\TagsStorage.cs" />
+     <Compile Include="Assets\Resources\scripts\Templates.cs" />
+     <Compile Include="Assets\Resources\scripts\TestGuiScript.cs" />
+     <Compile Include="Assets\Resources\scripts\TestStartScript.cs" />
+     <Compile Include="Assets\Resources\scripts\debug\DebugConsole.cs" />
+     <Compile Include="Assets\Resources\scripts\guiControllers\GamePhaseController.cs" />
+     <Compile Include="Assets\Resources\scripts\guiControllers\HelpMenuController.cs" />
+     <Compile Include="Assets\Resources\scripts\guiControllers\MainMenuController.cs" />
+     <Compile Include="Assets\Resources\scripts\guiControllers\MainMenuStarter.cs" />
+     <None Include="Assets\Resources\xml\planes\AllyRoundFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyFrigate.xml" />
+     <None Include="Assets\Resources\xml\guns\battlecruiser_gun.xml" />
+     <None Include="Assets\Resources\shaders\Hologram2DTextures.shader" />
+     <None Include="Assets\Resources\xml\planes\AllyDreadnaught.xml" />
+     <None Include="Assets\Resources\xml\guns\small_gun.xml" />
+     <None Include="Assets\Resources\levels\levels.xml" />
+     <None Include="Assets\Resources\xml\planes\NewFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyCruiser.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyShieldedFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyHeavyFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyAssault.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyRoundFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyBattlecruiser.xml" />
+     <None Include="Assets\Resources\xml\guns\medium_gun.xml" />
+     <None Include="Assets\Resources\xml\planes\HeavyFighter.xml" />
+     <None Include="Assets\Resources\xml\ranks.xml" />
+     <None Include="Assets\Resources\xml\planes\NewScout.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyNewScout.xml" />
+     <None Include="Assets\Resources\xml\guns\fighter_gun.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyDreadnaught.xml" />
+     <None Include="Assets\Resources\xml\guns\dogfight_gun.xml" />
+     <None Include="Assets\Resources\xml\gui_content\main_menu.xml" />
+     <None Include="Assets\Resources\xml\planes\default_class.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyHeavyFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyGas.xml" />
+     <None Include="Assets\Resources\levels\campaigns.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyScout.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyCorvette.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyBattleship.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyScout.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyNewFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyShieldedFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyNewScout.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyCruiser.xml" />
+     <None Include="Assets\Resources\xml\planes\RoundFighter.xml" />
+     <None Include="Assets\Resources\xml\guns\corvette_gun.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyFrigate.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyBattleship.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyGas.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyNewFighter.xml" />
+     <None Include="Assets\Resources\xml\guns\default_gun.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyAssault.xml" />
+     <None Include="Assets\Resources\xml\planes\AllyFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\EnemyFighter.xml" />
+     <None Include="Assets\Resources\xml\planes\ShieldedFighter.xml" />
+     <None Include="Assets\Resources\xml\guns\large_gun.xml" />
+ <Reference Include="UnityEngine.UI">
+ <HintPath>D:/Unity532p1/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Networking">
+ <HintPath>D:/Unity532p1/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>

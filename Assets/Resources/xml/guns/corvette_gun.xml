@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<gun
+	id="5"
+	gunName="Corvette special cannon"
+	damage="22"
+	reuse="0.2"
+	attackAngle="45.0"
+	bulletSpeed="2"
+	bulletDispersion="1"
+	attackRange="30"
+	bulletMesh="bulletPrefab">
+	<defectChance id="0" chance="1"/>
+	<defectChance id="1" chance="1"/>
+	<defectChance id="2" chance="1"/>
+	<defectChance id="3" chance="1"/>
+	<defectChance id="4" chance="1"/>
+	<defectChance id="5" chance="1"/>
+</gun>

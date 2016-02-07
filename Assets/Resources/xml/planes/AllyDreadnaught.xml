@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plane 
+	id="9"
+	classname="The New Future"
+	hp="2000"
+	minRange="4"
+	maxRange="10.5"
+	weapon="5"
+	armor="5"
+	speed="1"
+	maneuverability="1"
+	maxTurnAngle="25"
+	lowerSmooth='0.25'
+	upperSmooth='0.25'
+	description="Devil's Dozen's Dreadnaught is the heaviest ship of the Corp featuring terryfing broadside firepower.">	
+	<gun id="4" pos="2,-1" turnAngle="90.0"/>
+	<gun id="4" pos="2,1" turnAngle="90.0"/>
+	<gun id="4" pos="-2,-1" turnAngle="-90.0"/>
+	<gun id="4" pos="-2,1" turnAngle="-90.0"/>
+	<gun id="4" pos="3,-1" turnAngle="90.0"/>
+	<gun id="4" pos="3,1" turnAngle="90.0"/>
+	<gun id="4" pos="-3,-1" turnAngle="-90.0"/>
+	<gun id="4" pos="-3,1" turnAngle="-90.0"/>
+	<gun id="2" pos="1,3" turnAngle="45.0"/>
+	<gun id="2" pos="1,-3" turnAngle="135.0"/>
+	<gun id="2" pos="-1,3" turnAngle="-45.0"/>
+	<gun id="2" pos="-1,-3" turnAngle="-135.0"/>
+	<ability id="4"/>
+	<ability id="6"/>
+	
+	</plane>
