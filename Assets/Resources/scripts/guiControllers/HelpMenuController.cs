@@ -13,13 +13,12 @@ public class HelpMenuController : MonoBehaviour {
 	
 	public void loadLevel()
 	{
-		//GamePhaseController.showLoading();
-		Debug.Log("Selected lev: "+States.currentCampaign.levels[States.selectedLevel]);
-		States.gamePhaseGuiEnabled=true;
-		BulletPoolManager.getInstance().initialize();
-		GameStorage.getInstance().clearStorage();
-		UnityEngine.SceneManagement.SceneManager.LoadScene(1);
-		StaticBatchingUtility.Combine(GameObject.Find("bounds"));
-		Resources.UnloadUnusedAssets();
+		GamePhaseController.showLoading();
+		GameStorage.getInstance().loadLevel(States.selectedLevel);
+	}
+	
+	public void CLEAR()
+	{
+		PlayerPrefs.DeleteAll();
 	}
 }

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ranks>
-	<rank id="0" name="Lieutenant Junior Grade"/>
-	<rank id="1" name="Lieutenant"/>
-	<rank id="2" name="Lieutenant Commander"/>
-	<rank id="3" name="Commander"/>
-	<rank id="4" name="Captain"/>
-	<rank id="5" name="Rear Admiral"/>
-	<rank id="6" name="Vice Admiral"/>
-	<rank id="7" name="Admiral"/>
-	<rank id="8" name="Grand Admiral"/>
-	<rank id="9" name="2nd class pilot"/>
-	<rank id="10" name="1st class pilot"/>
-	<rank id="11" name="Elite pilot"/>
+	<rank id="0" name="Lieutenant Junior Grade" img="zvania_C_1"/>
+	<rank id="1" name="Lieutenant" img="zvania_C_2" level="1"/>
+	<rank id="2" name="Lieutenant Commander" img="zvania_C_3" level="2"/>
+	<rank id="3" name="Commander" img="zvania_C_4" level="3"/>
+	<rank id="4" name="Captain" img="zvania_C_5" level="4"/>
+	<rank id="5" name="Rear Admiral" img="zvania_C_6" level="5"/>
+	<rank id="6" name="Vice Admiral" img="zvania_C_7" level="6"/>
+	<rank id="7" name="Admiral" img="zvania_C_8" level="7"/>
+	<rank id="8" name="Grand Admiral" img="zvania_C_9" level="8"/>
+	<rank id="9" name="2nd class pilot" img="2nd_class_pilot" level="1"/>
+	<rank id="10" name="1st class pilot" img="1st_class_pilot" level="2"/>
+	<rank id="11" name="Elite pilot" img="Elite_pilot" level="3"/>
+	<rank id="12" name="Ensign" img="zvania_C_2" level="0"/>
+	<rank id="13" name="3rd class pilot" img="3rd_class_pilot" level="0"/>
 </ranks>

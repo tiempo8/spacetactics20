@@ -6,6 +6,7 @@ public class EnemySpaceship : MonoBehaviour {
 	public GameObject attackIcon;
 	public GameObject explosionParticle;
 	public Templates.PlaneTemplates planeTemplateId;
+	public GameObject MissleLaunchPos;
 	private ParticleSystem trailPart1,trailPart2;
 	private Templates.PlaneTemplate planeTemplate;
 	private Vector3 tmpVec;
@@ -21,6 +22,9 @@ public class EnemySpaceship : MonoBehaviour {
 	private FriendlySpaceship enemy;
 	private Vector2 targetPosition;
 	private Collider bodyCollider;
+	
+	private bool underGas=false;
+	private float lastGasBurned=0f;
 	
 	private FriendlySpaceship target;
 	
@@ -43,6 +47,11 @@ public class EnemySpaceship : MonoBehaviour {
 	private float fortestAngle=0;
 	
 	float d;
+	
+	public int getHP()
+	{
+		return hp;
+	}
 	
 	public void onSelected()
 	{
@@ -79,9 +88,18 @@ public class EnemySpaceship : MonoBehaviour {
 				if(gun.ready && enemy!=null)
 				{
 					f = Quaternion.Euler(0,0,-gameObject.transform.eulerAngles.y)*gun.pos;
-					BulletPoolManager.getInstance().shotBullet(BulletSide.ENEMY,new Vector3(transform.position.x+f.x,5,transform.position.z+f.y),enemy.transform.position,gunTemp.damage,gunTemp.bulletSpeed,BulletType.GUN_SMALL_BULLET,gunTemp.attackRange,gunTemp.bulletDispersion);
+					BulletPoolManager.getInstance().shotBullet(BulletSide.ENEMY,new Vector3(transform.position.x+f.x,5,transform.position.z+f.y),enemy.transform.position,gunTemp.damage,gunTemp.bulletSpeed,gunTemp.gunType,gunTemp.attackRange,gunTemp.bulletDispersion);
 					gun.ready=false;
 					gun.shotTime=Time.time;
+				}
+			}
+			
+			if(underGas)
+			{
+				if(Time.time >= lastGasBurned+Abilities.GasParameters.gasReuse)
+				{
+					Attacked(Abilities.GasParameters.gasDamage);
+					lastGasBurned=Time.time;
 				}
 			}
 			
@@ -106,10 +124,20 @@ public class EnemySpaceship : MonoBehaviour {
 		}
 	}
 	
+	public void onGasAreaEnter()
+	{
+		underGas=true;
+	}
+	
+	public void onGasAreaLeave()
+	{
+		underGas=false;
+	}
+	
 	private float getAttackAngle()
 	{
 		
-		v2tmp1 = new Vector2(0,5);
+		v2tmp1 = TagsStorage.oneVec;
 		v2tmp2 = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x-transform.position.x,Camera.main.ScreenToWorldPoint(Input.mousePosition).z-transform.position.z);
 		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
 		f2tmp = Vector2.Angle(v2tmp1,v2tmp2);
@@ -134,7 +162,7 @@ public class EnemySpaceship : MonoBehaviour {
 	private float getAttackIconAngle()
 	{
 		
-		v2tmp1 = new Vector2(0,5);
+		v2tmp1 = TagsStorage.oneVec;
 		v2tmp2 = new Vector2(attackIcon.transform.position.x-transform.position.x,attackIcon.transform.position.z-transform.position.z);
 		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
 		f2tmp = Vector2.Angle(v2tmp1,v2tmp2);
@@ -237,7 +265,7 @@ public class EnemySpaceship : MonoBehaviour {
 		}
 	}
 	
-	private void Destroyed()
+	public void Destroyed()
 	{
 		explosionParticle.SetActive(true);
 		bodyCollider.enabled=false;
@@ -260,13 +288,27 @@ public class EnemySpaceship : MonoBehaviour {
 		hp=planeTemplate.hp;
 	}
 	
+	void initBullets()
+	{
+		foreach(Templates.GunOnShuttle gun in planeTemplate.guns)
+		{
+			gunTemp=Templates.getInstance().getGunTemplate(gun.gunId);
+			if(gunTemp.gunType==BulletType.GUN_SMALL_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_SMALL_BULLET,15);
+			else if(gunTemp.gunType==BulletType.GUN_MID_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_MID_BULLET,10);
+			else if(gunTemp.gunType==BulletType.GUN_LARGE_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_LARGE_BULLET,10);
+		}
+	}
+	
 	void Start () {
-		BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_SMALL_BULLET,15);
 		planeTemplate=Templates.getInstance().getPlaneTemplate(planeTemplateId);
 		calculatePreferencedDirection();
 		GameStorage.getInstance().addToList(this);
 		bodyMeshRenderer=GetComponent<MeshRenderer>();
 		bodyCollider=GetComponent<Collider>();
+		initBullets();
 		explosionParticle.SetActive(false);
 		fillConstraints();
 	}

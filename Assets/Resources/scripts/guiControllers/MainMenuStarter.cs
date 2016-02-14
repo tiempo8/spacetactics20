@@ -13,6 +13,9 @@ public class MainMenuStarter : MonoBehaviour {
 	private GameObject campaignsContent;
 	private GameObject missionsContainer;
 	private GameObject companyPanelTmp;
+	
+	private GameObject rank_text,rank_img;
+	
 	public static  GameObject descriptionPanel;
 	private UnityEngine.UI.Button buttonTmp;
 	
@@ -24,8 +27,7 @@ public class MainMenuStarter : MonoBehaviour {
 		GameStorage.getInstance();
 		
 		//TEST
-		for(int i=0;i<30;i++)
-			PlayerPrefs.SetInt("mission"+i+"Stars",Random.Range(1,4));
+		//PlayerPrefs.DeleteAll();
 		//TEST END
 		
 		mainMenu=GameObject.Find("main_panel");
@@ -33,6 +35,9 @@ public class MainMenuStarter : MonoBehaviour {
 		helpMenu.SetActive(false);
 		plotMenu=GameObject.Find("plot_panel");
 		plotMenu.SetActive(false);
+		
+		rank_img=GameObject.Find("rank_img");
+		rank_text=GameObject.Find("rank_text");
 		
 		start_but=GameObject.Find("start_but");
 		missionsContainer=GameObject.Find("missions_container");
@@ -72,6 +77,19 @@ public class MainMenuStarter : MonoBehaviour {
 		missionsMenu.SetActive(true);
 		((UnityEngine.UI.Text)descriptionPanel.GetComponentsInChildren<UnityEngine.UI.Text>()[0]).text=camp.name;
 		((UnityEngine.UI.Text)descriptionPanel.GetComponentsInChildren<UnityEngine.UI.Text>()[1]).text=camp.desc;
+		
+		int currank= PlayerPrefs.GetInt("rank"+States.currentCampaign.id+"Campaign",-1);
+		if(currank==-1)
+		{
+			rank_text.GetComponent<UnityEngine.UI.Text>().text="Rank:\n"+Templates.getInstance().getRank(States.currentCampaign.defaultRank).name;
+			rank_img.GetComponent<UnityEngine.UI.Image>().overrideSprite=Templates.getInstance().getRank(States.currentCampaign.defaultRank).img;
+		}
+		else
+		{
+			rank_text.GetComponent<UnityEngine.UI.Text>().text="Rank:\n"+Templates.getInstance().getRank(currank).name;
+			rank_img.GetComponent<UnityEngine.UI.Image>().overrideSprite=Templates.getInstance().getRank(currank).img;
+		}
+		
 		int repetitions=camp.levels.Count/2;
 		bool free=true;
 		int stars1,stars2=0;
@@ -180,10 +198,8 @@ public class MainMenuStarter : MonoBehaviour {
 	{
 		if(States.selectedLevel==lev)
 		{
-			States.gamePhaseGuiEnabled=true;
-			UnityEngine.SceneManagement.SceneManager.LoadScene(1);
-			Resources.UnloadUnusedAssets();
-			
+			GamePhaseController.showLoading();
+			GameStorage.getInstance().loadLevel(lev);
 		}
 		if(States.selectedLevel!=lev)
 		{

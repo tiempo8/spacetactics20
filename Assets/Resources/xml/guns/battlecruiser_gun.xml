@@ -8,7 +8,8 @@
 	bulletSpeed="2"
 	bulletDispersion="2"
 	attackRange="40.0"
-	bulletMesh="bulletPrefab">
+	bulletMesh="bulletPrefab"
+	gunType="2">
 	<defectChance id="0" chance="2"/>
 	<defectChance id="1" chance="2"/>
 	<defectChance id="2" chance="2"/>

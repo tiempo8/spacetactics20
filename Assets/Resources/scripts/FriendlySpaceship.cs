@@ -6,6 +6,8 @@ public class FriendlySpaceship : MonoBehaviour {
 	public GameObject attackIcon;
 	public GameObject explosionParticle;
 	public Templates.PlaneTemplates planeTemplateId;
+	public GameObject shield;
+	public GameObject MisslesLaunchPoint;
 	private ParticleSystem trailPart1,trailPart2;
 	private Templates.PlaneTemplate planeTemplate;
 	private SpriteRenderer attackIconMeshRenderer;
@@ -27,7 +29,11 @@ public class FriendlySpaceship : MonoBehaviour {
 	private MeshRenderer bodyMeshRenderer;
 	private int abilRandonRotateDirection=1;
 	private bool rocketLaunched=false;
-	
+	private float curDistance;
+	private Vector3 forDist;
+	private float gasLastSpawnDist=0f;
+	private bool underGas=false;
+	private float lastGasBurned=0;
 	
 	//guns arcs
 	private GameObject gunTmp;
@@ -48,8 +54,10 @@ public class FriendlySpaceship : MonoBehaviour {
 	private float explodedDeltaTime=0;
 	
 	private Abilities.AbilityType activeAbil=Abilities.AbilityType.none;
+	private Abilities.AbilityType prevAbil=Abilities.AbilityType.none;
 	private int selectedAbilPosition=0;
 	private bool abilityInReuse=false;
+	private float attackIconAngleLast=0f;
 
 	public GameObject[] abilitiesGameObjects;
 	
@@ -60,12 +68,15 @@ public class FriendlySpaceship : MonoBehaviour {
 	
 	public void onSelected()
 	{
-		foreach(GameObject obj in arcObjs)
-			obj.SetActive(true);
-		Debug.Log("FRIENDLY HP: "+hp);
-		Debug.Log("Active abil: "+activeAbil);
-		for(i=0;i<planeTemplate.abilities.Count;i++)
-			abilitiesGameObjects[i+1].SetActive(true);
+		if(!States.WorldRunning)
+		{
+			foreach(GameObject obj in arcObjs)
+				obj.SetActive(true);
+			Debug.Log("FRIENDLY HP: "+hp);
+			Debug.Log("Active abil: "+activeAbil);
+			for(i=0;i<planeTemplate.abilities.Count;i++)
+				abilitiesGameObjects[i+1].SetActive(true);
+		}
 	}
 	
 	public void onDeselected()
@@ -78,7 +89,16 @@ public class FriendlySpaceship : MonoBehaviour {
 	
 	public void onStepStart()
 	{
-		//Debug.Log("ON START");
+		if(activeAbil==Abilities.AbilityType.shield)
+		{
+			if(shield!=null)
+			{
+				shield.SetActive(true);
+			}
+		}
+		curDistance=0.0f;
+		gasLastSpawnDist=0f;
+		forDist=transform.position;
 	}
 	
 	public void onAbilitySwitched(int abilNumber)
@@ -90,6 +110,7 @@ public class FriendlySpaceship : MonoBehaviour {
 				abilitiesGameObjects[0].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon((Abilities.AbilityType)planeTemplate.abilities[abilNumber-1],true);
 				abilitiesGameObjects[abilNumber].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon(Abilities.AbilityType.none,false);
 				selectedAbilPosition=abilNumber;
+				prevAbil=Abilities.AbilityType.none;
 				activeAbil=(Abilities.AbilityType) planeTemplate.abilities[abilNumber-1];
 				
 				abilitiesGameObjects[0].transform.eulerAngles=forActiveAbil;
@@ -98,6 +119,7 @@ public class FriendlySpaceship : MonoBehaviour {
 			{
 				if(activeAbil==(Abilities.AbilityType)planeTemplate.abilities[abilNumber-1])
 				{
+					prevAbil=activeAbil;
 					abilitiesGameObjects[0].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon(Abilities.AbilityType.none,true);
 					abilitiesGameObjects[abilNumber].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon(activeAbil,false);
 					selectedAbilPosition=0;
@@ -106,6 +128,7 @@ public class FriendlySpaceship : MonoBehaviour {
 				}
 				else
 				{
+					prevAbil=activeAbil;
 					abilitiesGameObjects[0].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon((Abilities.AbilityType)planeTemplate.abilities[abilNumber-1],true);
 					abilitiesGameObjects[selectedAbilPosition].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon(activeAbil,false);
 					abilitiesGameObjects[abilNumber].GetComponent<SpriteRenderer>().sprite=Templates.AbilitiesIcons.getIcon(Abilities.AbilityType.none,false);
@@ -120,6 +143,7 @@ public class FriendlySpaceship : MonoBehaviour {
 			maxLen=planeTemplate.maxRange;
 			minLen=planeTemplate.minRange;
 			maxAngle=planeTemplate.maxTurnAngle;
+			attackIcon.transform.localPosition=Quaternion.Euler(0,0,-attackIconAngleLast)*new Vector3(0,-maxLen,0);
 		}
 		
 		if(activeAbil==Abilities.AbilityType.halfRoundTurn)
@@ -130,6 +154,7 @@ public class FriendlySpaceship : MonoBehaviour {
 			abilRandonRotateDirection=Random.Range(0,2);
 			if(abilRandonRotateDirection==0) abilRandonRotateDirection=-1;
 			//Debug.Log("RA: "+abilRandonRotateDirection);
+			attackIcon.transform.localPosition=new Vector3(0,-maxLen,0);
 		}
 		
 		if(activeAbil==Abilities.AbilityType.turnAround)
@@ -139,6 +164,7 @@ public class FriendlySpaceship : MonoBehaviour {
 			maxAngle=planeTemplate.maxTurnAngle;
 			abilRandonRotateDirection=Random.Range(0,2);
 			if(abilRandonRotateDirection==0) abilRandonRotateDirection=-1;
+			attackIcon.transform.localPosition=Quaternion.Euler(0,0,-attackIconAngleLast)*new Vector3(0,-maxLen,0);
 		}
 		
 		if(activeAbil==Abilities.AbilityType.doubleThrottle)
@@ -146,9 +172,9 @@ public class FriendlySpaceship : MonoBehaviour {
 			maxLen=2*planeTemplate.maxRange;
 			minLen=2*planeTemplate.minRange;
 			maxAngle=planeTemplate.maxTurnAngle;
+			attackIcon.transform.localPosition=Quaternion.Euler(0,0,-attackIconAngleLast)*new Vector3(0,-maxLen,0);
 		}
 		
-		attackIcon.transform.localPosition=new Vector3(0,-maxLen,0);
 		CalculatePath();
 		if(activeAbil!=Abilities.AbilityType.none)
 			abilitiesGameObjects[0].transform.eulerAngles=forActiveAbil;
@@ -187,6 +213,13 @@ public class FriendlySpaceship : MonoBehaviour {
 	
 	public void onStepEnd()
 	{
+		if(activeAbil==Abilities.AbilityType.shield)
+		{
+			if(shield!=null)
+			{
+				shield.SetActive(false);
+			}
+		}
 		t=0;
 		updateAttackIconPosition();
 		reloadIcons();
@@ -195,6 +228,61 @@ public class FriendlySpaceship : MonoBehaviour {
 		maxAngle=planeTemplate.maxTurnAngle;
 		CalculatePath();
 		rocketLaunched=false;
+	}
+	
+	public bool haveAbilRocketsOrThorpeds()
+	{
+		return (Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.homingMissle) || Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.homingThorpede)) && !abilityInReuse;
+	}
+	
+	public void setRocketsOrThorpeds()
+	{
+		if(!abilityInReuse && activeAbil!=Abilities.AbilityType.homingMissle && activeAbil!=Abilities.AbilityType.homingThorpede)
+		{
+			if(Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.homingThorpede))
+			{
+				if(((Abilities.AbilityType) planeTemplate.abilities[0])==Abilities.AbilityType.homingThorpede)
+					onAbilitySwitched(1);
+				if(planeTemplate.abilities.Count>=2)
+				{
+					if(((Abilities.AbilityType) planeTemplate.abilities[1])==Abilities.AbilityType.homingThorpede)
+						onAbilitySwitched(2);
+				}
+				if(planeTemplate.abilities.Count>=3)
+				{
+					if(((Abilities.AbilityType) planeTemplate.abilities[2])==Abilities.AbilityType.homingThorpede)
+						onAbilitySwitched(3);
+				}
+				if(planeTemplate.abilities.Count>=4)
+				{
+					if(((Abilities.AbilityType) planeTemplate.abilities[3])==Abilities.AbilityType.homingThorpede)
+						onAbilitySwitched(4);
+				}
+			}
+			else
+			{
+				if(Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.homingMissle))
+				{
+					if(((Abilities.AbilityType) planeTemplate.abilities[0])==Abilities.AbilityType.homingMissle)
+						onAbilitySwitched(1);
+					if(planeTemplate.abilities.Count>=2)
+					{
+						if(((Abilities.AbilityType) planeTemplate.abilities[1])==Abilities.AbilityType.homingMissle)
+							onAbilitySwitched(2);
+					}
+					if(planeTemplate.abilities.Count>=3)
+					{
+						if(((Abilities.AbilityType) planeTemplate.abilities[2])==Abilities.AbilityType.homingMissle)
+							onAbilitySwitched(3);
+					}
+					if(planeTemplate.abilities.Count>=4)
+					{
+						if(((Abilities.AbilityType) planeTemplate.abilities[3])==Abilities.AbilityType.homingMissle)
+							onAbilitySwitched(4);
+					}
+				}
+			}
+		}
 	}
 	
 	public void hideAttackIcon()
@@ -227,10 +315,19 @@ public class FriendlySpaceship : MonoBehaviour {
 					{
 						//SHOT PROCEDURE WITH POOLING
 						f = Quaternion.Euler(0,0,-gameObject.transform.eulerAngles.y)*gun.pos;
-						BulletPoolManager.getInstance().shotBullet(BulletSide.FRIENDLY,new Vector3(transform.position.x+f.x,5,transform.position.z+f.y),enemy.transform.position,gunTemp.damage,gunTemp.bulletSpeed,BulletType.GUN_SMALL_BULLET,gunTemp.attackRange,gunTemp.bulletDispersion);
+						BulletPoolManager.getInstance().shotBullet(BulletSide.FRIENDLY,new Vector3(transform.position.x+f.x,5,transform.position.z+f.y),enemy.transform.position,gunTemp.damage,gunTemp.bulletSpeed,gunTemp.gunType,gunTemp.attackRange,gunTemp.bulletDispersion);
 						gun.ready=false;
 						gun.shotTime=Time.time;
 					}
+				}
+			}
+			
+			if(underGas)
+			{
+				if(Time.time >= lastGasBurned+Abilities.GasParameters.gasReuse)
+				{
+					Attacked(Abilities.GasParameters.gasDamage);
+					lastGasBurned=Time.time;
 				}
 			}
 			
@@ -240,7 +337,7 @@ public class FriendlySpaceship : MonoBehaviour {
 			tmpVec.x=x;
 			tmpVec.y=5;
 			tmpVec.z=y;
-			
+			curDistance+=Vector3.Distance(forDist,tmpVec);
 			if(activeAbil==Abilities.AbilityType.halfRoundTurn)
 				f2tmp=transform.eulerAngles.y+abilRandonRotateDirection*180*Time.fixedDeltaTime/3;
 			else if(activeAbil==Abilities.AbilityType.turnAround)
@@ -266,14 +363,35 @@ public class FriendlySpaceship : MonoBehaviour {
 				MisslePoolManager.getInstance().LaunchThorpede(MissleSide.FRIENDLY,this);
 				rocketLaunched=true;
 			}
+			else if(activeAbil==Abilities.AbilityType.gas)
+			{
+				if(curDistance>=gasLastSpawnDist)
+				{
+					MisslePoolManager.getInstance().LaunchGas(MissleSide.FRIENDLY,this);
+					gasLastSpawnDist=curDistance+Abilities.GasParameters.betweenDist;
+				}
+			}
+			else if(activeAbil==Abilities.AbilityType.mines)
+			{
+				if(curDistance>=gasLastSpawnDist)
+				{
+					MisslePoolManager.getInstance().LaunchMine(MissleSide.FRIENDLY,this);
+					gasLastSpawnDist=curDistance+Abilities.MinesParameters.betweenDist;
+				}
+			}
 			
 			transform.eulerAngles=new Vector3(270,f2tmp,0);
 			//Debug.Log("ALLY: "+f2tmp);
 			fortestAngle=f2tmp;
 			
-			
 			transform.position=tmpVec;
+			forDist=transform.position;
 		}
+	}
+	
+	public int getHP()
+	{
+		return hp;
 	}
 	
 	public void Attacked(int damage)
@@ -285,9 +403,11 @@ public class FriendlySpaceship : MonoBehaviour {
 		}
 	}
 	
-	private void Destroyed()
+	public void Destroyed()
 	{
 		explosionParticle.SetActive(true);
+		if(shield!=null)
+			shield.SetActive(false);
 		bodyCollider.enabled=false;
 		exploded=true;
 		GameStorage.getInstance().removeFromList(this);
@@ -318,6 +438,7 @@ public class FriendlySpaceship : MonoBehaviour {
 	private void updateAttackIconPosition()
 	{
 		attackIcon.transform.localPosition=forUpdatePositionNORMAL;
+		attackIconAngleLast=0f;
 		CalculatePath();
 		CalculatePath();
 	}
@@ -325,7 +446,7 @@ public class FriendlySpaceship : MonoBehaviour {
 	private float getAttackAngle()
 	{
 		
-		v2tmp1 = new Vector2(0,5);
+		v2tmp1 = TagsStorage.oneVec;
 		v2tmp2 = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x-transform.position.x,Camera.main.ScreenToWorldPoint(Input.mousePosition).z-transform.position.z);
 		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
 		f2tmp = Vector2.Angle(v2tmp1,v2tmp2);
@@ -338,7 +459,7 @@ public class FriendlySpaceship : MonoBehaviour {
 	private float getAttackIconAngle()
 	{
 		
-		v2tmp1 = new Vector2(0,5);
+		v2tmp1 = TagsStorage.oneVec;
 		v2tmp2 = new Vector2(attackIcon.transform.position.x-transform.position.x,attackIcon.transform.position.z-transform.position.z);
 		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
 		f2tmp = Vector2.Angle(v2tmp1,v2tmp2);
@@ -467,13 +588,16 @@ public class FriendlySpaceship : MonoBehaviour {
 		abilitiesGameObjects[4].transform.eulerAngles=forAbilities;
 		
 		CalculatePath();
+		
+		attackIconAngleLast=getAngleDst(transform.eulerAngles.y,getAttackIconAngle());
+		
 		return true;
 	}
 	
 	private float getAngleDst(float fr, float to)
 	{
-		v2tmp1 = Quaternion.Euler(0,0,fr)*new Vector2(0,5);
-		v2tmp2 = Quaternion.Euler(0,0,to)*new Vector2(0,5);
+		v2tmp1 = Quaternion.Euler(0,0,fr)*TagsStorage.oneVec;
+		v2tmp2 = Quaternion.Euler(0,0,to)*TagsStorage.oneVec;
 		
 		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
 		f2tmp = fr-to;
@@ -547,6 +671,7 @@ public class FriendlySpaceship : MonoBehaviour {
 	        m.RecalculateNormals();
 	        arcObjs.Add(gunTmp);
 	        gunTmp.transform.SetParent(transform);
+	        gunTmp.transform.eulerAngles=new Vector3(0,transform.eulerAngles.y+goss.turnAngle,0);
 	        gunTmp.transform.localPosition-=new Vector3(goss.pos.x,goss.pos.y,0);
 	        gunTmp.SetActive(false);
 		}
@@ -559,6 +684,16 @@ public class FriendlySpaceship : MonoBehaviour {
 		maxAngle=planeTemplate.maxTurnAngle;
 		forUpdatePositionNORMAL=new Vector3(0,-maxLen,0);
 		hp=planeTemplate.hp;
+	}
+	
+	public void onGasAreaEnter()
+	{
+		underGas=true;
+	}
+	
+	public void onGasAreaLeave()
+	{
+		underGas=false;
 	}
 	
 	private void initAbils()
@@ -576,10 +711,27 @@ public class FriendlySpaceship : MonoBehaviour {
 			MisslePoolManager.getInstance().createPoolObjects(MissleSide.FRIENDLY,MissleType.ROCKET,4);
 		if(Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.homingThorpede))
 			MisslePoolManager.getInstance().createPoolObjects(MissleSide.FRIENDLY,MissleType.THORPEDE,4);
+		if(Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.gas))
+			MisslePoolManager.getInstance().createPoolObjects(MissleSide.FRIENDLY,MissleType.GAS,60);
+		if(Abilities.haveAbil(planeTemplate.abilities,Abilities.AbilityType.mines))
+			MisslePoolManager.getInstance().createPoolObjects(MissleSide.FRIENDLY,MissleType.MINES,60);
+	}
+	
+	void initBullets()
+	{
+		foreach(Templates.GunOnShuttle gun in planeTemplate.guns)
+		{
+			gunTemp=Templates.getInstance().getGunTemplate(gun.gunId);
+			if(gunTemp.gunType==BulletType.GUN_SMALL_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_SMALL_BULLET,15);
+			else if(gunTemp.gunType==BulletType.GUN_MID_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_MID_BULLET,10);
+			else if(gunTemp.gunType==BulletType.GUN_LARGE_BULLET)
+				BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_LARGE_BULLET,10);
+		}
 	}
 	
 	void Start () {
-		BulletPoolManager.getInstance().createPoolObjs(BulletType.GUN_SMALL_BULLET,15);
 		planeTemplate=Templates.getInstance().getPlaneTemplate(planeTemplateId);
 		attackIconMeshRenderer=attackIcon.GetComponent<SpriteRenderer>();
 		lineRenderer=gameObject.GetComponent<LineRenderer>();
@@ -588,6 +740,7 @@ public class FriendlySpaceship : MonoBehaviour {
 		explosionParticle.SetActive(false);
 		GameStorage.getInstance().addToList(this);
 		fillConstraints();
+		initBullets();
 		createArcs();
 		updateAttackIconPosition();
 		CalculatePath();

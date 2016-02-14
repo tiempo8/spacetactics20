@@ -17,6 +17,7 @@ public class GamePhaseController : MonoBehaviour {
 	
 	public GameObject mainPanel;
 	public GameObject loadingPanel;
+	public GameObject zalpButton;
 	
 	public static void showLoading()
 	{
@@ -25,5 +26,10 @@ public class GamePhaseController : MonoBehaviour {
 			getInstance().mainPanel.SetActive(false);
 		if(getInstance().loadingPanel!=null)
 			getInstance().loadingPanel.SetActive(true);
+	}
+	
+	public static void setZalpButtonActive(bool active)
+	{
+		getInstance().zalpButton.GetComponent<UnityEngine.UI.Button>().interactable=active;
 	}
 }

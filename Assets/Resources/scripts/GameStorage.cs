@@ -21,6 +21,7 @@ public class GameStorage {
 	private float sin,mangle;
 	private Vector2 v1,v2;
 	private float d;
+	private int curSelected=0;
 	
 	public GameStorage()
 	{
@@ -46,6 +47,8 @@ public class GameStorage {
 		enemyExplodeList.Clear();
 		enemyExplodeListToRemove.Clear();
 		friendlyExplodeListToRemove.Clear();
+		States.SummaryHp=0;
+		curSelected=0;
 	}
 	
 	public void processExplode()
@@ -99,6 +102,10 @@ public class GameStorage {
 						MisslePoolManager.getInstance().DestroyRocket(obj);
 					if(obj.type==MissleType.THORPEDE)
 						MisslePoolManager.getInstance().DestroyThorpede(obj);
+					if(obj.type==MissleType.MINES)
+						MisslePoolManager.getInstance().DestroyMine(obj);
+					if(obj.type==MissleType.GAS)
+						MisslePoolManager.getInstance().DestroyGas(obj);
 				}
 				rocketExplodeListToRemove.Clear();
 			}
@@ -121,9 +128,14 @@ public class GameStorage {
 	public void addToList(Object ob)
 	{
 		if(ob.GetType()==typeof(FriendlySpaceship))
+		{
 			friendlySpaceships.Add(ob);
+			States.SummaryHp+=Templates.getInstance().getPlaneTemplate(((FriendlySpaceship)ob).planeTemplateId).hp;
+		}
 		if(ob.GetType()==typeof(EnemySpaceship))
 			enemySpaceships.Add(ob);
+		
+		checkZalpButtonState();
 	}
 	
 	public void removeFromList(Object ob)
@@ -214,7 +226,7 @@ public class GameStorage {
 	
 	public float getAngleRelative(GameObject a, GameObject b)
 	{
-		v1 = new Vector2(0,5);
+		v1 = TagsStorage.oneVec;
 		v2 = new Vector2(b.transform.position.x-a.transform.position.x,b.transform.position.z-a.transform.position.z);
 		sin = (v1.x*v2.y - v1.y*v2.x);
 		mangle = Vector2.Angle(v1,v2);
@@ -226,7 +238,7 @@ public class GameStorage {
 	
 	public float getAngleRelative(Vector2 a, Vector2 b)
 	{
-		v1 = new Vector2(0,5);
+		v1 = TagsStorage.oneVec;
 		v2 = new Vector2(b.x-a.x,b.y-a.y);
 		sin = (v1.x*v2.y - v1.y*v2.x);
 		mangle = Vector2.Angle(v1,v2);
@@ -282,8 +294,8 @@ public class GameStorage {
 		Vector2 pos2;
 		foreach(FriendlySpaceship enemy in friendlySpaceships)
 		{
-//			if(enemy.isAlive())
-//			{
+			if(enemy.isAlive())
+			{
 				pos2=new Vector2(enemy.gameObject.transform.position.x,enemy.gameObject.transform.position.z);
 				if((dist=Vector2.Distance(gunPos,pos2))<=gunTemp.attackRange && Mathf.Abs(getAngleDst(gunAngle,getAngleRelative(friendlyShuttle.gameObject,enemy.gameObject)))<=gunTemp.attackAngle)
 				{
@@ -301,9 +313,36 @@ public class GameStorage {
 						}
 					}
 				}
-			//}
+			}
 		}
 		return ret;
+	}
+	
+	private int CalculateRemainHp()
+	{
+		int res=0;
+		foreach(FriendlySpaceship obj in friendlySpaceships)
+			res+=obj.getHP();
+		return res;
+	}
+	
+	
+	
+	private void CalculateWinLose()
+	{
+		if(friendlySpaceships.Count>0)
+			States.winloseResult=States.WinLoseSettings.getStars((int)(((float) CalculateRemainHp() / (float) States.SummaryHp)*100));
+		else if(enemySpaceships.Count>0)
+			States.winloseResult=-1;
+		else
+			States.winloseResult=0;
+		States.winLoseController.ShowWinlose();
+	}
+	
+	public void setRocketsAndThorpeds()
+	{
+		foreach(FriendlySpaceship obj in friendlySpaceships)
+			obj.setRocketsOrThorpeds();
 	}
 	
 	public float getStartTime()
@@ -316,12 +355,41 @@ public class GameStorage {
 		return endTime;
 	}
 	
+	public void checkZalpButtonState()
+	{
+		bool res=false;
+		foreach(FriendlySpaceship obj in friendlySpaceships)
+		{
+			if(obj.haveAbilRocketsOrThorpeds())
+			{
+				res=true;
+				break;
+			}
+		}
+		GamePhaseController.setZalpButtonActive(res);
+	}
+	
 	public void AccelerateAllUnits()
 	{
 		foreach(EnemySpaceship obj in enemySpaceships)
 			obj.STEP();
 		foreach(FriendlySpaceship obj in friendlySpaceships)
 			obj.STEP();
+	}
+	
+	public FriendlySpaceship getNextFriendlyToFocus()
+	{
+		curSelected++;
+		curSelected=curSelected%friendlySpaceships.Count;
+		return (FriendlySpaceship) friendlySpaceships[curSelected];
+	}
+	
+	public FriendlySpaceship getPrevFriendlyToFocus()
+	{
+		curSelected--;
+		if(curSelected<0)
+			curSelected+=friendlySpaceships.Count;
+		return (FriendlySpaceship) friendlySpaceships[curSelected];
 	}
 	
 	private void clearRemoveLists()
@@ -334,6 +402,16 @@ public class GameStorage {
 		
 		enemySpaceshipsToRemove.Clear();
 		friendleSpaceShipsToRemove.Clear();
+	}
+	
+	public void loadLevel(int level)
+	{
+		States.gamePhaseGuiEnabled=true;
+		States.inPauseMenu=false;
+		clearStorage();
+		BulletPoolManager.getInstance().initialize();
+		MisslePoolManager.getInstance().initialize();
+		UnityEngine.SceneManagement.SceneManager.LoadScene(Templates.getInstance().getLevel((int)States.currentCampaign.levels[level]).file);
 	}
 	
 	//EVENTS
@@ -352,7 +430,6 @@ public class GameStorage {
 	
 	public void toggleOnStepEnd()
 	{
-		clearRemoveLists();
 		BulletPoolManager.getInstance().clearAllActiveBullets();
 		foreach(FriendlySpaceship obj in friendlySpaceships)
 		{
@@ -362,7 +439,13 @@ public class GameStorage {
 		foreach(EnemySpaceship obj in enemySpaceships)
 			obj.onStepEnd();
 		
+		clearRemoveLists();
+		if(friendlySpaceships.Count==0 || enemySpaceships.Count==0)
+			CalculateWinLose();
+		
 		MisslePoolManager.getInstance().ToggleOnStepEnd();
+		
+		checkZalpButtonState();
 	}
 	
 	public void toggleOnZoomChangedEvent()

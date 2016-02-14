@@ -6,6 +6,10 @@
 	public static string ENEMY_TAG="enemy";
 	public static string ABIL_SUBTAG="abil";
 	public static string ABIL_SUBTAG_REUSED="reused";
+	public static string ABIL_SHIELD="shield";
+	public static string ASTEROID_TAG="asteroid";
+	public static string ROCKET_TAG="rocket";
+	public static string THORPEDE_TAG="thorpede";
 	
 	public static UnityEngine.Vector3 oneVec=new UnityEngine.Vector2(0,5);
 }

@@ -70,6 +70,16 @@ public class MissleBehaviour : MonoBehaviour {
 			}
 			
 		}
+		if(type==MissleType.GAS)
+		{
+			if(lifeCycle==Abilities.GasParameters.lifeTimeRounds)
+				DestroyedGas();
+		}
+		if(type==MissleType.MINES)
+		{
+			if(lifeCycle==Abilities.MinesParameters.lifeTimeRounds)
+				Destroyed();
+		}
 		lifeCycle++;
 	}
 	
@@ -345,7 +355,19 @@ public class MissleBehaviour : MonoBehaviour {
 			updateAttackIconPosition();
 			meshRender=GetComponent<MeshRenderer>();
 		}
+		else if(type==MissleType.MINES)
+		{
+			meshRender=GetComponent<MeshRenderer>();
+		}
 		lifeCycle=0;
+	}
+	
+	public void Boom()
+	{
+		if(type==MissleType.GAS)
+			DestroyedGas();
+		else
+			Destroyed();
 	}
 	
 	public bool Explode()
@@ -353,8 +375,16 @@ public class MissleBehaviour : MonoBehaviour {
 		if(exploded)
 		{
 			explodedDeltaTime+=Time.deltaTime;
-			if(explodedDeltaTime>=3)
-				return true;
+			if(type==MissleType.GAS)
+			{
+				if(explodedDeltaTime>=5)
+					return true;
+			}
+			else
+			{
+				if(explodedDeltaTime>=3)
+					return true;
+			}
 		}
 		return false;
 	}
@@ -363,6 +393,15 @@ public class MissleBehaviour : MonoBehaviour {
 	{
 		explosionParticle.SetActive(true);
 		meshRender.enabled=false;
+		exploded=true;
+		GameStorage.getInstance().addToExplodeList(this);
+	}
+	
+	private void DestroyedGas()
+	{
+		//explosionParticle.SetActive(true);
+		//meshRender.enabled=false;
+		this.transform.position=MisslePoolManager.getInstance().stackPos;
 		exploded=true;
 		GameStorage.getInstance().addToExplodeList(this);
 	}
@@ -388,6 +427,23 @@ public class MissleBehaviour : MonoBehaviour {
 					Destroyed();
 				}
 			}
+			
+			if(type==MissleType.GAS)
+			{
+				if(col.gameObject.tag==TagsStorage.FRIENDLY_TAG)
+				{
+					col.gameObject.GetComponent<FriendlySpaceship>().onGasAreaEnter();
+				}
+			}
+			
+			if(type==MissleType.MINES)
+			{
+				if(col.gameObject.tag==TagsStorage.FRIENDLY_TAG)
+				{
+					col.gameObject.GetComponent<FriendlySpaceship>().Attacked(Abilities.MinesParameters.Damage);
+					Destroyed();
+				}
+			}
 		}
 		
 		if(side==MissleSide.FRIENDLY)
@@ -407,6 +463,48 @@ public class MissleBehaviour : MonoBehaviour {
 				{
 					col.gameObject.GetComponent<EnemySpaceship>().Attacked(Abilities.ThorpedeParameters.damage);
 					Destroyed();
+				}
+			}
+			
+			if(type==MissleType.GAS)
+			{
+				if(col.gameObject.tag==TagsStorage.ENEMY_TAG)
+				{
+					col.gameObject.GetComponent<EnemySpaceship>().onGasAreaEnter();
+				}
+			}
+			
+			if(type==MissleType.MINES)
+			{
+				if(col.gameObject.tag==TagsStorage.ENEMY_TAG)
+				{
+					col.gameObject.GetComponent<EnemySpaceship>().Attacked(Abilities.MinesParameters.Damage);
+					Destroyed();
+				}
+			}
+		}
+	}
+	
+	void OnCollisionExit(Collision col)
+	{
+		if(side==MissleSide.FRIENDLY)
+		{
+			if(type==MissleType.GAS)
+			{
+				if(col.gameObject.tag==TagsStorage.ENEMY_TAG)
+				{
+					col.gameObject.GetComponent<EnemySpaceship>().onGasAreaLeave();
+				}
+			}
+		}
+		
+		if(side==MissleSide.ENEMY)
+		{
+			if(type==MissleType.GAS)
+			{
+				if(col.gameObject.tag==TagsStorage.FRIENDLY_TAG)
+				{
+					col.gameObject.GetComponent<FriendlySpaceship>().onGasAreaLeave();
 				}
 			}
 		}

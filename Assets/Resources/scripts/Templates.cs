@@ -15,6 +15,7 @@ public class Templates{
 	
 	public ArrayList campaignsList,levelList;
 	private ArrayList planeClasses,gunClasses;
+	private ArrayList ranksList;
 	public GameObject missionBlockPrefab;
 	
 	private Sprite[] numbersSprites;
@@ -67,7 +68,8 @@ public class Templates{
 //		
 		
 		//
-		
+		ranksList=new ArrayList();
+		loadRanks();
 		campaignsList=new ArrayList();
 		loadCampaigns();
 		levelList=new ArrayList();
@@ -79,6 +81,16 @@ public class Templates{
 		gunClasses=new ArrayList();
 		LoadGunClasses();
 		LoadPlaneClasses();
+	}
+	
+	public Rank getRank(int id)
+	{
+		foreach(Rank p in ranksList)
+		{
+			if(p.id==(int)id)
+				return p;
+		}
+		return null;
 	}
 	
 	public enum GunTemplates : int
@@ -271,7 +283,7 @@ public class Templates{
 	{
 		public int id;
 		public string name;
-		public string defaultRank;
+		public int defaultRank;
 		public string desc = "";
 		public ArrayList levels = new ArrayList();
 	}
@@ -285,7 +297,7 @@ public class Templates{
 		public float bulletSpeed;
 		public float bulletDispersion;
 		public float attackAngle,attackRange;
-		public string bulletMesh;
+		public BulletType gunType = BulletType.GUN_SMALL_BULLET;
 		//public float[] defectsChance = new float[Enum.GetNames(typeof(Defects.DefectType)).Length];
 	}
 	
@@ -342,6 +354,7 @@ public class Templates{
 				t.armor=p.armor;
 				t.speed=p.speed;
 				t.maneuverability=p.maneuverability;
+				t.launchPos=p.launchPos;
 				foreach(GunOnShuttle f in p.guns)
 				{
 					GunOnShuttle z = new GunOnShuttle();
@@ -400,8 +413,8 @@ public class Templates{
 							p.bulletSpeed=float.Parse(m.Value);
 						else if(m.Name=="bulletDispersion")
 							p.bulletDispersion=float.Parse(m.Value);
-						else if(m.Name=="bulletMesh")
-							p.bulletMesh=m.Value;
+						else if(m.Name=="gunType")
+							p.gunType=(BulletType)int.Parse(m.Value);
 					}
 					
 					foreach(XmlNode m in x.ChildNodes)
@@ -428,6 +441,38 @@ public class Templates{
 		Debug.Log("Loaded: "+gunClasses.Count+" gun classes.");
 	}
 	
+	private void loadRanks()
+	{
+		XmlDocument doc = new XmlDocument();
+		doc.LoadXml(((TextAsset) Resources.Load("xml/ranks")).text);
+		foreach(XmlNode x in doc.ChildNodes)
+		{
+			if(x.Name=="ranks")
+			{
+				foreach(XmlNode m in x.ChildNodes)
+				{
+					if(m.Name=="rank")
+					{
+						Rank li = new Rank();
+						foreach(XmlNode l in m.Attributes)
+						{
+							if(l.Name=="id")
+								li.id=int.Parse(l.Value);
+							else if(l.Name=="name")
+								li.name=l.Value;
+							else if(l.Name=="img")
+								li.img=Resources.Load<Sprite>("gui/skinsLow/img/ranks/"+l.Value);
+							else if(l.Name=="level")
+								li.level=int.Parse(l.Value);
+						}
+						ranksList.Add(li);
+					}
+				}
+			}
+		}
+		Debug.Log("Loaded "+ranksList.Count+" ranks.");
+	}
+	
 	public PlaneTemplate getPlaneTemplate(int id)
 	{
 		foreach(PlaneTemplate p in planeClasses)
@@ -448,6 +493,7 @@ public class Templates{
 				t.armor=p.armor;
 				t.speed=p.speed;
 				t.maneuverability=p.maneuverability;
+				t.launchPos=p.launchPos;
 				foreach(GunOnShuttle f in p.guns)
 				{
 					GunOnShuttle z = new GunOnShuttle();
@@ -506,6 +552,8 @@ public class Templates{
 							p.speed=int.Parse(m.Value);
 						else if(m.Name=="maneuverability")
 							p.maneuverability=int.Parse(m.Value);
+						else if(m.Name=="lauchPos")
+							p.launchPos.Set(float.Parse(m.Value.Split(',')[0]),float.Parse(m.Value.Split(',')[1]));
 										
 					}
 					
@@ -555,6 +603,15 @@ public class Templates{
 		public int rankReached=-1;
 	}
 	
+	public class Rank
+	{
+		public int id;
+		public string name;
+		public Sprite img;
+		public int level;
+		// maybe ico
+	}
+	
 	private void loadNumberGrafics()
 	{
 		int i=0;
@@ -599,6 +656,7 @@ public class Templates{
 		public int armor=1;
 		public int speed=1;
 		public int maneuverability=1;
+		public Vector2 launchPos=new Vector2(0,0);
 		
 		public ArrayList guns = new ArrayList();
 		public ArrayList abilities = new ArrayList();
@@ -660,7 +718,7 @@ public class Templates{
 							else if(l.Name=="name")
 								li.name=l.Value;
 							else if(l.Name=="defaultRank")
-								li.defaultRank=l.Value;
+								li.defaultRank=int.Parse(l.Value);
 							else if(l.Name=="description")
 								li.desc=l.Value;
 						}
@@ -929,12 +987,6 @@ public class Templates{
 //		GameStorage.getInstance().allReady=true;
 //	}
 //	
-//	public class Rank
-//	{
-//		public int id;
-//		public string name;
-//		// maybe ico
-//	}
 //	
 
 //	
@@ -948,15 +1000,6 @@ public class Templates{
 //		return null;
 //	}
 //	
-//	public Rank getRank(int id)
-//	{
-//		foreach(Rank p in ranksList)
-//		{
-//			if(p.id==(int)id)
-//				return p;
-//		}
-//		return null;
-//	}
 //	
 //	public ArrayList getCampaigns()
 //	{
@@ -972,33 +1015,7 @@ public class Templates{
 //	
 	
 //	
-//	private void loadRanks()
-//	{
-//		XmlDocument doc = new XmlDocument();
-//		doc.LoadXml(((TextAsset) Resources.Load(ranksFolder+"/ranks")).text);
-//		foreach(XmlNode x in doc.ChildNodes)
-//		{
-//			if(x.Name=="ranks")
-//			{
-//				foreach(XmlNode m in x.ChildNodes)
-//				{
-//					if(m.Name=="rank")
-//					{
-//						Rank li = new Rank();
-//						foreach(XmlNode l in m.Attributes)
-//						{
-//							if(l.Name=="id")
-//								li.id=int.Parse(l.Value);
-//							else if(l.Name=="name")
-//								li.name=l.Value;
-//						}
-//						ranksList.Add(li);
-//					}
-//				}
-//			}
-//		}
-//		Debug.Log("Loaded "+ranksList.Count+" ranks.");
-//	}
+	
 //	
 //	
 	

@@ -29,8 +29,8 @@ public class CameraBehaviour : MonoBehaviour {
 	private GameObject tmp;
 	
 	void Update () {
-		
-		
+		if(!States.inPauseMenu)
+		{
 			BeginOfUpdate();
 			if(Application.isMobilePlatform)
 			{
@@ -38,7 +38,7 @@ public class CameraBehaviour : MonoBehaviour {
 				{
 					if((tmp=fingerOver(Input.GetTouch(0)))!=null)
 					{
-						if(tmp.tag=="attack_icon")
+						if(tmp.tag==TagsStorage.ATTACK_ICON_TAG)
 						{
 							States.parentSpaceshipInstance=tmp.transform.parent.GetComponent<FriendlySpaceship>();
 							States.parentSpaceshipInstance.onAttackIconCapture();
@@ -58,7 +58,25 @@ public class CameraBehaviour : MonoBehaviour {
 								States.currentSelectedTag=States.SelectedType.FRIENDLY;
 							}
 						}
-						else if(tmp.tag=="friendly")
+						else if(tmp.tag==TagsStorage.ATTACK_ICON_TAG_MISSLE)
+						{
+							States.parentMissleInstance=tmp.transform.parent.GetComponent<MissleBehaviour>();
+							States.parentMissleInstance.OnAttackIconCaptured();
+							GameStorage.getInstance().toggleHideAllAttackIcons(States.parentMissleInstance);
+							States.currentAttackIconCaptured=tmp;
+							
+							
+							if(States.currentSelected!=null)
+							{
+								if(States.currentSelectedTag==States.SelectedType.FRIENDLY)
+									States.currentSelected.GetComponent<FriendlySpaceship>().onDeselected();
+								if(States.currentSelectedTag==States.SelectedType.ENEMY)
+									States.currentSelected.GetComponent<EnemySpaceship>().onDeselected();
+							}
+							States.currentSelected=null;
+							States.currentSelectedTag=States.SelectedType.NONE;
+						}
+						else if(tmp.tag==TagsStorage.FRIENDLY_TAG)
 						{
 							if(States.currentSelected!=null)
 							{
@@ -71,7 +89,7 @@ public class CameraBehaviour : MonoBehaviour {
 							States.currentSelected=tmp;
 							States.currentSelectedTag=States.SelectedType.FRIENDLY;
 						}
-						else if(tmp.tag=="enemy")
+						else if(tmp.tag==TagsStorage.ENEMY_TAG)
 						{
 							if(States.currentSelected!=null)
 							{
@@ -84,9 +102,9 @@ public class CameraBehaviour : MonoBehaviour {
 							States.currentSelected=tmp;
 							States.currentSelectedTag=States.SelectedType.ENEMY;
 						}
-						else if(tmp.tag.Split('_')[0]=="abil")
+						else if(tmp.tag.Split('_')[0]==TagsStorage.ABIL_SUBTAG)
 						{
-							if(tmp.tag.Split('_')[1]!="reused")
+							if(tmp.tag.Split('_')[1]!=TagsStorage.ABIL_SUBTAG_REUSED)
 								tmp.transform.parent.transform.parent.GetComponent<FriendlySpaceship>().onAbilitySwitched(int.Parse(tmp.tag.Split('_')[1]));
 							else
 								tmp.transform.parent.transform.parent.GetComponent<FriendlySpaceship>().onAbilitySwitched(-1);
@@ -131,22 +149,45 @@ public class CameraBehaviour : MonoBehaviour {
 					{
 						if(States.currentAttackIconCaptured!=null)
 						{
-							GameStorage.getInstance().toggleShowAllAttackIcons(States.parentSpaceshipInstance);
-							States.parentSpaceshipInstance.onAttackIconDeCaptured();
-							States.parentSpaceshipInstance=null;
-							States.currentAttackIconCaptured=null;
+							if(States.currentAttackIconCaptured.tag==TagsStorage.ATTACK_ICON_TAG_MISSLE)
+							{
+								GameStorage.getInstance().toggleShowAllAttackIcons(States.parentMissleInstance);
+								States.parentMissleInstance.OnAttackIconDecaptured();
+								States.parentMissleInstance=null;
+								States.currentAttackIconCaptured=null;
+							}
+							else
+							{
+								GameStorage.getInstance().toggleShowAllAttackIcons(States.parentSpaceshipInstance);
+								States.parentSpaceshipInstance.onAttackIconDeCaptured();
+								States.parentSpaceshipInstance=null;
+								States.currentAttackIconCaptured=null;
+							}
 						}
 					}
 				}
 				
 				if(States.currentAttackIconCaptured!=null)
 				{
-					if(!States.parentSpaceshipInstance.onAttackIconMoved(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position)))
+					if(States.currentAttackIconCaptured.tag==TagsStorage.ATTACK_ICON_TAG_MISSLE)
 					{
-						GameStorage.getInstance().toggleShowAllAttackIcons(States.parentSpaceshipInstance);
-						States.parentSpaceshipInstance.onAttackIconDeCaptured();
-						States.parentSpaceshipInstance=null;
-						States.currentAttackIconCaptured=null;
+						if(!States.parentMissleInstance.OnAttackIconMoved(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position)))
+						{
+							GameStorage.getInstance().toggleShowAllAttackIcons(States.parentMissleInstance);
+							States.parentMissleInstance.OnAttackIconDecaptured();
+							States.parentMissleInstance=null;
+							States.currentAttackIconCaptured=null;
+						}
+					}
+					else
+					{
+						if(!States.parentSpaceshipInstance.onAttackIconMoved(Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position)))
+						{
+							GameStorage.getInstance().toggleShowAllAttackIcons(States.parentSpaceshipInstance);
+							States.parentSpaceshipInstance.onAttackIconDeCaptured();
+							States.parentSpaceshipInstance=null;
+							States.currentAttackIconCaptured=null;
+						}
 					}
 				}
 			}
@@ -312,11 +353,29 @@ public class CameraBehaviour : MonoBehaviour {
 					}
 				}
 			}
+			
+			if(States.nextToFocus!=null)
+			{
+				Camera.main.transform.position=new Vector3(States.nextToFocus.gameObject.transform.position.x,20,States.nextToFocus.transform.position.z);
+				CorrectCameraPosition();
+				if(States.currentSelected!=null)
+				{
+					if(States.currentSelectedTag==States.SelectedType.FRIENDLY)
+						States.currentSelected.GetComponent<FriendlySpaceship>().onDeselected();
+					if(States.currentSelectedTag==States.SelectedType.ENEMY)
+							States.currentSelected.GetComponent<EnemySpaceship>().onDeselected();
+				}
+				States.nextToFocus.GetComponent<FriendlySpaceship>().onSelected();
+				States.currentSelected=States.nextToFocus.gameObject;
+				States.currentSelectedTag=States.SelectedType.FRIENDLY;
+				States.nextToFocus=null;
+			}
+			
 			DragCamera();
 			MoveCamera();
 			CameraZoom();
 			EndOfUpdate();
-		
+		}
 	}
 	
 	void FixedUpdate()
@@ -386,6 +445,27 @@ public class CameraBehaviour : MonoBehaviour {
 				
 				CorrectCameraPosition();
 			}
+			else
+			{
+				if(States.zoomAction!=0)
+				{
+					
+					Camera.main.orthographicSize-=States.zoomAction*zoomSpd;
+					
+					if(Camera.main.orthographicSize<=minZoom)
+						Camera.main.orthographicSize=minZoom;
+					else if(Camera.main.orthographicSize>=maxZoom)
+						Camera.main.orthographicSize=maxZoom;
+						
+					States.currentZoom=Camera.main.orthographicSize;
+				
+					GameStorage.getInstance().toggleOnZoomChangedEvent();
+				
+					CorrectCameraPosition();
+					
+					States.zoomAction=0;
+				}
+			}
 		}
 		else if(Application.platform==RuntimePlatform.Android)
 		{
@@ -397,12 +477,33 @@ public class CameraBehaviour : MonoBehaviour {
 	            curMousePos = touchOne.position - touchOne.deltaPosition;
 				zoomA = (prevMousePos - curMousePos).magnitude;
 	            zoomB = (touchZero.position - touchOne.position).magnitude;
-	            Camera.main.orthographicSize += (zoomA - zoomB) * 0.5f;
+	            Camera.main.orthographicSize += (zoomA - zoomB) * 0.25f;
                 Camera.main.orthographicSize = Mathf.Max(Camera.main.orthographicSize, minZoom);
                 Camera.main.orthographicSize = Mathf.Min(Camera.main.orthographicSize, maxZoom);
                 CorrectCameraPosition();
                 States.currentZoom=Camera.main.orthographicSize;
 				GameStorage.getInstance().toggleOnZoomChangedEvent();
+			}
+			else
+			{
+				if(States.zoomAction!=0)
+				{
+					
+					Camera.main.orthographicSize-=States.zoomAction*zoomSpd;
+					
+					if(Camera.main.orthographicSize<=minZoom)
+						Camera.main.orthographicSize=minZoom;
+					else if(Camera.main.orthographicSize>=maxZoom)
+						Camera.main.orthographicSize=maxZoom;
+					
+					States.currentZoom=Camera.main.orthographicSize;
+				
+					GameStorage.getInstance().toggleOnZoomChangedEvent();
+				
+					CorrectCameraPosition();
+					
+					States.zoomAction=0;
+				}
 			}
 		}
 	}

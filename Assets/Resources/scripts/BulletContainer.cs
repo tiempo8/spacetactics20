@@ -19,11 +19,14 @@ public class BulletContainer : MonoBehaviour {
 	private float timeToDestroy=0;
 	public GameObject gunParticle;
 	public GameObject collisionParticle;
+	public GameObject trailForMid;
 	private float x,y,d=0;
 	
 	public void initialize()
 	{
 		gunParticle.SetActive(true);
+		if(trailForMid!=null)
+			trailForMid.SetActive(true);
 		collisionParticle.SetActive(false);
 		t=0;
 		d=0;
@@ -43,7 +46,10 @@ public class BulletContainer : MonoBehaviour {
 	{
 		if(side==BulletSide.FRIENDLY)
 		{
-			if(col.gameObject.tag==enemyTag)
+			if(col.gameObject.tag==TagsStorage.ABIL_SHIELD)
+				deactivate();
+			
+			if(col.gameObject.tag==TagsStorage.ENEMY_TAG)
 			{
 				col.gameObject.GetComponent<EnemySpaceship>().Attacked(damage);
 				deactivate();
@@ -52,12 +58,17 @@ public class BulletContainer : MonoBehaviour {
 		
 		if(side==BulletSide.ENEMY)
 		{
-			if(col.gameObject.tag==friendlyTag)
+			if(col.gameObject.tag==TagsStorage.FRIENDLY_TAG)
 			{
 				col.gameObject.GetComponent<FriendlySpaceship>().Attacked(damage);
 				deactivate();
 			}
+			if(col.gameObject.tag==TagsStorage.ABIL_SHIELD)
+				deactivate();
 		}
+		
+		if(col.gameObject.tag==TagsStorage.ASTEROID_TAG)
+			deactivate();
 	}
 	
 	public void STEP()
@@ -84,8 +95,10 @@ public class BulletContainer : MonoBehaviour {
 	public void deactivate()
 	{
 		gunParticle.SetActive(false);
+		if(trailForMid!=null)
+			trailForMid.SetActive(false);
 		collisionParticle.SetActive(true);
-		timeToDestroy=Time.time+0.5f;
+		timeToDestroy=Time.time+1.0f;
 		inDeal=false;
 		//gunParticle.GetComponent<ParticleSystem>().Stop();
 	}

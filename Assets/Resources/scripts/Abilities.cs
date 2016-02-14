@@ -105,6 +105,6 @@ public static class Abilities
 		public const int Damage=300;
 		public const float betweenDist=3f;
 		public const float boomSpeed=2;
-		public const int lifeTimeRounds=10;
+		public const int lifeTimeRounds=2;
 	}
 }

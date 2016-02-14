@@ -13,7 +13,7 @@ public class BulletPoolManager {
 	private Vector3 bulletStartPosition = new Vector3(-1000,-1000,-1000);
 	private GameObject tmp;
 	private BulletContainer bullTmp;
-	private ArrayList bulletSmallGunList;
+	private ArrayList bulletSmallGunList,bulletMidGunList,bulletLargeGunList;
 	private ArrayList activeBullets;
 	private int i;
 	private ArrayList activeBulletsToRemove;
@@ -22,6 +22,9 @@ public class BulletPoolManager {
 	private BulletPoolManager()
 	{
 		bulletSmallGunList=new ArrayList();
+		bulletMidGunList=new ArrayList();
+		bulletLargeGunList=new ArrayList();
+		
 		activeBullets = new ArrayList();
 		activeBulletsToRemove=new ArrayList();
 	}
@@ -29,6 +32,9 @@ public class BulletPoolManager {
 	public void initialize()
 	{
 		bulletSmallGunList.Clear();
+		bulletMidGunList.Clear();
+		bulletLargeGunList.Clear();
+		
 		activeBullets.Clear();
 		activeBulletsToRemove.Clear();
 	}
@@ -41,6 +47,22 @@ public class BulletPoolManager {
 			for(i=0;i<count;i++)
 			{
 				tmp=(GameObject) GameObject.Instantiate(Resources.Load("prefab/bullets/smallGunBullet"),bulletStartPosition,Quaternion.identity);
+				bringToBack(type,tmp.GetComponent<BulletContainer>());
+			}
+		}
+		else if(type==BulletType.GUN_MID_BULLET)
+		{
+			for(i=0;i<count;i++)
+			{
+				tmp=(GameObject) GameObject.Instantiate(Resources.Load("prefab/bullets/midGunBullet"),bulletStartPosition,Quaternion.identity);
+				bringToBack(type,tmp.GetComponent<BulletContainer>());
+			}
+		}
+		else if(type==BulletType.GUN_LARGE_BULLET)
+		{
+			for(i=0;i<count;i++)
+			{
+				tmp=(GameObject) GameObject.Instantiate(Resources.Load("prefab/bullets/largeGunBullet"),bulletStartPosition,Quaternion.identity);
 				bringToBack(type,tmp.GetComponent<BulletContainer>());
 			}
 		}
@@ -81,6 +103,18 @@ public class BulletPoolManager {
 			bullet.gameObject.transform.position=bulletStartPosition;
 			bulletSmallGunList.Add(bullet);
 		}
+		else if(type==BulletType.GUN_MID_BULLET)
+		{
+			bullet.gameObject.SetActive(false);
+			bullet.gameObject.transform.position=bulletStartPosition;
+			bulletMidGunList.Add(bullet);
+		}
+		else if(type==BulletType.GUN_LARGE_BULLET)
+		{
+			bullet.gameObject.SetActive(false);
+			bullet.gameObject.transform.position=bulletStartPosition;
+			bulletLargeGunList.Add(bullet);
+		}
 	}
 	
 	private BulletContainer getFreeBullet(BulletType type)
@@ -93,6 +127,26 @@ public class BulletPoolManager {
 				break;
 			}
 			bulletSmallGunList.Remove(bullTmp);
+			return bullTmp;
+		}
+		else if(type==BulletType.GUN_MID_BULLET)
+		{
+			foreach(BulletContainer bull in bulletMidGunList)
+			{
+				bullTmp=bull;
+				break;
+			}
+			bulletMidGunList.Remove(bullTmp);
+			return bullTmp;
+		}
+		else if(type==BulletType.GUN_LARGE_BULLET)
+		{
+			foreach(BulletContainer bull in bulletLargeGunList)
+			{
+				bullTmp=bull;
+				break;
+			}
+			bulletLargeGunList.Remove(bullTmp);
 			return bullTmp;
 		}
 		return null;
@@ -108,13 +162,29 @@ public class BulletPoolManager {
 		bringToBack(bullet.type,bullet);
 	}
 	
-	public void shotBullet(BulletSide side, Vector3 startPosition, Vector3 destination, int damage, float speed, BulletType type, float maxRange, float dispersion)
+	private Vector2 v2tmp1,v2tmp2;
+	private float f1tmp,f2tmp;
+	
+	private float getBulletAngle(Vector3 start, Vector3 destination)
 	{
 		
+		v2tmp1 = TagsStorage.oneVec;
+		v2tmp2 = new Vector2(destination.x-start.x,destination.z-start.z);
+		f1tmp = (v2tmp1.x*v2tmp2.y - v2tmp1.y*v2tmp2.x);
+		f2tmp = Vector2.Angle(v2tmp1,v2tmp2);
+		if(f1tmp<=0)
+			return f2tmp;
+		else
+			return (180-f2tmp)+180;
+	}
+	
+	public void shotBullet(BulletSide side, Vector3 startPosition, Vector3 destination, int damage, float speed, BulletType type, float maxRange, float dispersion)
+	{
 		bullTmp=getFreeBullet(type);
 		bullTmp.gameObject.transform.position=startPosition;
 		bullTmp.destination=destination;
 		bullTmp.damage=damage;
+		bullTmp.transform.eulerAngles=new Vector3(bullTmp.transform.eulerAngles.x,getBulletAngle(startPosition,destination),bullTmp.transform.eulerAngles.z);
 		bullTmp.speedModifier=speed;
 		bullTmp.type=type;
 		bullTmp.dispersion=dispersion;
